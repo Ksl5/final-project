@@ -15,8 +15,6 @@ load_dotenv()
 
 api_key = os.environ.get("FRED_API_KEY")
 
-
-
 try:
     state = input("Please input a state abbreviation: ")
     FRED_series_id = (state) + "UR"
@@ -32,9 +30,9 @@ except KeyError:
     exit()
 
 
-print(last_value)
+print("Last Value: " + str(last_value))
 
-### need an error check here ###
+
 
 # API Pull
 
@@ -59,8 +57,8 @@ for v in parsed_response["observations"]:
 all_time_high = max(all_values)
 all_time_low = min(all_values)
 
-print(all_time_high)
-print(all_time_low)
+print("All time High: " + str(all_time_high))
+print("All time Low: " + str(all_time_low))
 
 # Getting the pre-COVID-19 state UR
 
