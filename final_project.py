@@ -60,7 +60,7 @@ pre_covid_level = matching_observation["value"]
 print("--------------------------------------------")
 print("The " + str.upper(state) + " Labor Market During COVID-19 Pandemic")
 print("--------------------------------------------")
-print("Current UR: " + ToString(last_value))
+print("Current UR: " + "{:.0%}".format(last_value))
 print("February 2020 UR " + str(pre_covid_level))
 print("All Time High UR: " + str(all_time_high))
 print("All Time Low UR: " + str(all_time_low))
