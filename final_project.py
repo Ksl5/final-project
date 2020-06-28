@@ -16,19 +16,21 @@ api_key = os.environ.get("FRED_API_KEY")
 
 # User Input and API Pull
 
-try:
-    state = input("Please input a state abbreviation: ")
-    FRED_series_id = (state) + "UR"
-    request_url = f"https://api.stlouisfed.org/fred/series/observations?series_id={FRED_series_id}&api_key={api_key}&file_type=json"
-    response = requests.get(request_url)
+while True: 
+    try:
+        state = input("Please input a state abbreviation: ")
+        FRED_series_id = (state) + "UR"
+        request_url = f"https://api.stlouisfed.org/fred/series/observations?series_id={FRED_series_id}&api_key={api_key}&file_type=json"
+        response = requests.get(request_url)
 
-    parsed_response = json.loads(response.text)
+        parsed_response = json.loads(response.text)
 
-    total_observations = parsed_response["count"]
+        total_observations = parsed_response["count"]
+        break
 
-except KeyError:
-    print("Hey, didn't find that location. Try again please.")
-    exit()
+    except KeyError:
+        print("Hey, didn't find that state. Please try again with a state abbreviation.")
+        
 
 # Getting the state's most recent UR
 
@@ -46,6 +48,14 @@ for v in parsed_response["observations"]:
 
 all_time_high = max(all_values)
 all_time_low = min(all_values)
+
+matching_dates_low = [v for v in parsed_response["observations"] if float(v["value"]) == all_time_low]
+matching_date_low = matching_dates_low[0]
+all_time_low_date = matching_date_low["date"]
+
+matching_dates_high = [v for v in parsed_response["observations"] if float(v["value"]) == all_time_high]
+matching_date_high = matching_dates_high[0]
+all_time_high_date = matching_date_high["date"]
 
 # Getting the state's pre-COVID-19 unemployment rate
 
@@ -71,21 +81,20 @@ UR_difference = round(last_value - last_value_us, 1)
 # Information Output
 
 print("----------------------------------------------------------------------")
-print("The " + str.upper(state) + " Labor Market During COVID-19 Pandemic")
+print(f"The {str.upper(state)} Labor Market During COVID-19 Pandemic")
 print("----------------------------------------------------------------------")
-print("Current Unemployment Rate: " + str(last_value) + "%")
-print("February 2020 Unemployment Rate " + str(pre_covid_level) + "%")
-print("All-Time High Unemployment Rate: " + str(all_time_high) + "%")
-print("All-Time Low Unemployment Rate: " + str(all_time_low) + "%")
-print("Current Unemployment Rate for the United States: " + str(last_value_us) + "%")
-print("Difference between " + str.upper(state) + " and the US: " + str(UR_difference) + "ppts")
+print(f"Current Unemployment Rate: {str(last_value)}%")
+print(f"February 2020 Unemployment Rate {str(pre_covid_level)}%")
+print(f"All-Time High Unemployment Rate ({all_time_high_date}): {str(all_time_high)}%")
+print(f"All-Time Low Unemployment Rate ({all_time_low_date}): {str(all_time_low)}%")
+print(f"Current Unemployment Rate for the United States: {str(last_value_us)}%")
+print(f"Difference between {str.upper(state)} and the US: {str(UR_difference)}ppts")
 print("----------------------------------------------------------------------")
 if last_value > last_value_us:
     print("THIS STATE'S LABOR MARKET IS AT HIGHER RISK OF NEEDING ECONOMIC POLICY ASSISTANCE")
 else:
     print("THIS STATE'S LABOR MARKET IS AT LOWER RISK OF NEEDING ECONOMIC POLICY ASSISTANCE")
 print("----------------------------------------------------------------------")
-
 
 #Data Visualization 1 REFERENCE: https://plotly.com/python/time-series/
 
@@ -104,7 +113,13 @@ for y in parsed_response["observations"]:
     all_date.append(val_date)
 dates = all_date 
 
+
 fig = px.line(x=dates, y=values, title='Unemployment Rate Time Series')
+
+fig.update_layout(
+    xaxis_title="Date",
+    yaxis_title="Unemployment Rate",
+)
 
 fig.update_xaxes(
     rangeslider_visible=True,
@@ -117,8 +132,10 @@ fig.update_xaxes(
             dict(step="all")])))
 plotly.offline.plot(fig)
 
-fig.update_xaxes(title_text='Time')
-fig.update_yaxes(title_text='Unemployment Rate')
+
+
+
+
 
 
 # Data Visualization 2 REFERENCE: https://plotly.com/python/line-charts/
